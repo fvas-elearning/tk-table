@@ -37,24 +37,31 @@ class Checkbox extends Iface
 
         $js = <<<JS
 jQuery(function($) {
-
-  function checkAll(headCheckbox) {
-    var _cb = $(headCheckbox);
-    var name = _cb.attr('name').match(/([a-zA-Z0-9]+)_all/i)[1];
-    var _list = _cb.parents('div.tk-table').find('.table-body input[name^=\''+name+'\']');
-	if (_cb.prop('checked'))  {
-	  _list.prop('checked', true);
-	} else {
-	  _list.prop('checked', false);
-	}
-	_list.trigger('change');
-  }
   
-  var head = $('.tk-table .tk-tcb-head');
-  checkAll(head);
-  head.on('change', function(e){
-      checkAll(this);
-  });
+  var init = function () {
+    var form = $(this);
+    var table = form.parent();
+    if (!table.is('.tk-table')) return;
+    
+    function checkAll(headCheckbox) {
+      var _cb = $(headCheckbox);
+      var name = _cb.attr('name').match(/([a-zA-Z0-9]+)_all/i)[1];
+      var _list = _cb.parents('div.tk-table').find('.table-body input[name^=\''+name+'\']');
+	  if (_cb.prop('checked'))  {
+	    _list.prop('checked', true);
+	  } else {
+	    _list.prop('checked', false);
+	  }
+	  _list.trigger('change');
+    }
+    
+    var head = form.find('.tk-tcb-head');
+    head.on('change', function(e){
+        checkAll(this);
+    }).trigger('change');
+    
+  };
+  $('.tk-table form').on('init', document, init).each(init);
 });
 JS;
         $template->appendJs($js);

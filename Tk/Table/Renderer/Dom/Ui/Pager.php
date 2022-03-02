@@ -1,6 +1,8 @@
 <?php
 namespace Tk\Table\Renderer\Dom\Ui;
 
+use Tk\Db\Tool;
+
 /**
  * Class
  *
@@ -52,32 +54,69 @@ class Pager extends Iface
      */
     public function __construct($total = 0, $limit = 25, $offset = 0)
     {
-        $this->total = (int)$total;
-        $this->limit = (int)$limit;
-        $this->offset = (int)$offset;
+        $this->setTotal($total);
+        $this->setLimit($limit);
+        $this->setOffset($offset);
+        $this->setPageUrl(\Tk\Uri::create());
+    }
 
-        $this->pageUrl = \Tk\Uri::create();
+    /**
+     * 
+     * @param int $total The total number of records on all pages
+     * @param int $limit
+     * @param int $offset
+     * @return Pager
+     */
+    public static function create($total = 0, $limit = 25, $offset = 0): Pager
+    {
+        return new self();
     }
 
 
     /**
-     * @param \Tk\Db\Tool $tool
+     * @param \Tk\Db\Map\ArrayObject $list
+     * @return Pager
+     * @deprecated Use initFromArrayObject
+     */
+    public static function createFromDbArray(\Tk\Db\Map\ArrayObject $list): Pager
+    {
+        return new self($list->countAll(), $list->getTool()->getLimit(), $list->getTool()->getOffset());
+    }
+
+    /**
+     * @param Tool $tool
      * @param int $foundRows
      * @return Pager
+     * @deprecated Use initFromDbTool
      */
-    public static function createFromDbTool($tool, $foundRows = 0)
+    public static function createFromDbTool($tool, $foundRows = 0): Pager
     {
         return new self($foundRows, $tool->getLimit(), $tool->getOffset());
     }
 
     /**
-     *
      * @param \Tk\Db\Map\ArrayObject $list
      * @return Pager
      */
-    public static function createFromDbArray(\Tk\Db\Map\ArrayObject $list)
+    public function initFromArrayObject(\Tk\Db\Map\ArrayObject $list): Pager
     {
-        return new self($list->countAll(), $list->getTool()->getLimit(), $list->getTool()->getOffset());
+        $this->setTotal($list->countAll());
+        $this->setLimit($list->getTool()->getLimit());
+        $this->setOffset($list->getTool()->getOffset());
+        return $this;
+    }
+
+    /**
+     * @param Tool $tool
+     * @param int $foundRows
+     * @return Pager
+     */
+    public function initFromDbTool($tool, $foundRows = 0): Pager
+    {
+        $this->setTotal($foundRows);
+        $this->setLimit($tool->getLimit());
+        $this->setOffset($tool->getOffset());
+        return $this;
     }
 
     /**
@@ -119,6 +158,60 @@ class Pager extends Iface
     public function setEnablePageButtons($enablePageButtons)
     {
         $this->enablePageButtons = $enablePageButtons;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    /**
+     * @param int $total
+     * @return Pager
+     */
+    public function setTotal(int $total): Pager
+    {
+        $this->total = $total;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLimit(): int
+    {
+        return $this->limit;
+    }
+
+    /**
+     * @param int $limit
+     * @return Pager
+     */
+    public function setLimit(int $limit): Pager
+    {
+        $this->limit = $limit;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOffset(): int
+    {
+        return $this->offset;
+    }
+
+    /**
+     * @param int $offset
+     * @return Pager
+     */
+    public function setOffset(int $offset): Pager
+    {
+        $this->offset = $offset;
+        return $this;
     }
 
     /**

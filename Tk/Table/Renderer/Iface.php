@@ -1,6 +1,7 @@
 <?php
 namespace Tk\Table\Renderer;
 
+use Tk\ObjectUtil;
 use \Tk\Table;
 use \Tk\Table\Cell;
 
@@ -24,7 +25,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     protected $table = null;
 
     /**
-     * @var array
+     * @var array|\Tk\Table\Renderer\Dom\Ui\Iface[]
      */
     protected $footRenderList = array();
 
@@ -43,11 +44,14 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     /**
      * construct
      *
-     * @param Table $table
+     * @param Table|null $table
      */
     public function __construct($table = null)
     {
         $this->setTable($table);
+        $this->appendFootRenderer(Table\Renderer\Dom\Ui\Results::create(), 'Results');
+        $this->appendFootRenderer(Table\Renderer\Dom\Ui\Pager::create(), 'Pager');
+        $this->appendFootRenderer(Table\Renderer\Dom\Ui\Limit::create(), 'Limit');
     }
 
     /**
@@ -59,10 +63,8 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     public function setTable($table)
     {
         if (!$table instanceof Table) return false;
-
         $this->table = $table;
         $this->table->setRenderer($this);
-
         return true;
     }
 
@@ -79,15 +81,57 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     /**
      * Append a renderer to the footer renderer list
      *
-     * @param mixed $renderer
+     * @param Dom\Ui\Iface $renderer
+     * @param null|string $key If null then class name is used
      */
-    public function appendFootRenderer($renderer)
+    public function appendFootRenderer($renderer, $key = null)
     {
-        $this->footRenderList[] = $renderer;
+        if (!$key)
+            $key = ObjectUtil::basename($renderer);
+        if ($this->getTable()) {
+            // TODO: I would have thought to use getInstanceId() from the stable, this is an issue???
+            $renderer->setInstanceId($this->getTable()->getId());
+        } else {
+            \Tk\Log::info('NOTE: Instance ID not set for: ' . \Tk\ObjectUtil::basename($renderer));
+        }
+        $this->footRenderList[$key] = $renderer;
+        return $this;
     }
 
     /**
-     * @return array
+     * @param string $key
+     * @return mixed|null|\Tk\Table\Renderer\Dom\Ui\Iface
+     */
+    public function getFootRenderer($key)
+    {
+        if (isset($this->footRenderList[$key]))
+            return $this->footRenderList[$key];
+    }
+
+    /**
+     * @param string $key
+     * @param \Tk\Table\Renderer\Dom\Ui\Iface $renderer
+     * @return $this
+     */
+    public function addFootRenderer($key, $renderer)
+    {
+        $this->footRenderList[$key] = $renderer;
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @return $this
+     */
+    public function removeFootRenderer($key)
+    {
+        if (isset($this->footRenderList[$key]))
+            unset($this->footRenderList[$key]);
+        return $this;
+    }
+
+    /**
+     * @return array|\Tk\Table\Renderer\Dom\Ui\Iface[]
      */
     public function getFooterRenderList()
     {
@@ -95,7 +139,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * @param array $footRenderList
+     * @param array|\Tk\Table\Renderer\Dom\Ui\Iface[] $footRenderList
      * @return $this
      */
     public function setFooterRenderList($footRenderList = array())

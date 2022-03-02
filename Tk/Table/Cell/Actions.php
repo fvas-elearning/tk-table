@@ -30,6 +30,14 @@ class Actions extends Text
     }
 
     /**
+     * @return bool
+     */
+    public function hasButtons()
+    {
+        return count($this->buttonList) > 0;
+    }
+
+    /**
      * @param ActionButton $button
      * @return ActionButton
      */

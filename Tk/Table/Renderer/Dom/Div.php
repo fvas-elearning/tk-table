@@ -10,6 +10,15 @@ use \Tk\Table\Cell;
  */
 class Div extends Table
 {
+    /**
+     * construct
+     *
+     * @param \Tk\Table|null $table
+     */
+    public function __construct($table = null)
+    {
+        parent::__construct($table);
+    }
 
     /**
      * @param \Tk\Table $table

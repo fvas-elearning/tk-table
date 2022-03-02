@@ -31,6 +31,20 @@ class Html extends Text
     }
 
     /**
+     * Get the raw string property value with no formatting.
+     * This call can be used for exporting data into a csv, json, xml format
+     *
+     * @param mixed $obj
+     * @return string
+     */
+    public function getRawValue($obj)
+    {
+        $value = strip_tags($this->getPropertyValue($obj));
+        return $value;
+    }
+
+
+    /**
      * @param mixed $obj
      * @param int|null $rowIdx The current row being rendered (0-n) If null no rowIdx available.
      * @return string

@@ -1,8 +1,9 @@
 <?php
 namespace Tk\Table\Renderer\Dom\Ui;
 
+use Tk\Db\Tool;
+
 /**
- * Class
  *
  * @author Michael Mifsud <info@tropotek.com>
  * @see http://www.tropotek.com/
@@ -36,29 +37,120 @@ class Results extends Iface
      */
     public function __construct($total = 0, $limit = 0, $offset = 0)
     {
-        $this->total = intval($total);
-        $this->limit = intval($limit);
-        $this->offset = intval($offset);
+        $this->setTotal($total);
+        $this->setLimit($limit);
+        $this->setOffset($offset);
     }
+
+    /**
+     * @return Results
+     */
+    public static function create(): Results
+    {
+        return new self();
+    }
+
 
     /**
      * @param \Tk\Db\Map\ArrayObject $list
      * @return Results
+     * @deprecated Use initFromArrayObject
      */
-    public static function createFromDbArray(\Tk\Db\Map\ArrayObject $list)
+    public static function createFromDbArray(\Tk\Db\Map\ArrayObject $list): Results
     {
         return new self($list->countAll(), $list->getTool()->getLimit(), $list->getTool()->getOffset());
     }
 
     /**
-     * @param \Tk\Db\Tool $tool
+     * @param Tool $tool
      * @param int $foundRows
      * @return Results
+     * @deprecated Use initFromDbTool
      */
-    public static function createFromDbTool($tool, $foundRows = 0)
+    public static function createFromDbTool($tool, $foundRows = 0): Results
     {
         return new self($foundRows, $tool->getLimit(), $tool->getOffset());
     }
+
+    /**
+     * @param \Tk\Db\Map\ArrayObject $list
+     * @return $this
+     */
+    public function initFromArrayObject(\Tk\Db\Map\ArrayObject $list): Results
+    {
+        $this->setTotal($list->countAll());
+        $this->setLimit($list->getTool()->getLimit());
+        $this->setOffset($list->getTool()->getOffset());
+        return $this;
+    }
+
+    /**
+     * @param Tool $tool
+     * @param int $foundRows
+     * @return Results
+     */
+    public function initFromDbTool($tool, $foundRows = 0): Results
+    {
+        $this->setTotal($foundRows);
+        $this->setLimit($tool->getLimit());
+        $this->setOffset($tool->getOffset());
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTotal(): int
+    {
+        return $this->total;
+    }
+
+    /**
+     * @param int $total
+     * @return Results
+     */
+    public function setTotal(int $total): Results
+    {
+        $this->total = $total;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLimit(): int
+    {
+        return $this->limit;
+    }
+
+    /**
+     * @param int $limit
+     * @return Results
+     */
+    public function setLimit(int $limit): Results
+    {
+        $this->limit = $limit;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOffset(): int
+    {
+        return $this->offset;
+    }
+
+    /**
+     * @param int $offset
+     * @return Results
+     */
+    public function setOffset(int $offset): Results
+    {
+        $this->offset = $offset;
+        return $this;
+    }
+
 
     /**
      * show

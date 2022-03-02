@@ -17,7 +17,7 @@ class Boolean extends Text
      * @param mixed $obj
      * @return string
      */
-    public function getRawValue($obj)
+    public function getPropertyValue($obj)
     {
         $value = $this->getObjectPropertyValue($obj);
         $v = 'No';

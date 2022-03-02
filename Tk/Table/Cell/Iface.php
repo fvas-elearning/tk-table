@@ -2,6 +2,7 @@
 namespace Tk\Table\Cell;
 
 use Tk\Callback;
+use Tk\ConfigTrait;
 use Tk\Table;
 use Tk\Uri;
 
@@ -16,7 +17,7 @@ use Tk\Uri;
  */
 abstract class Iface
 {
-
+    use ConfigTrait;
     use \Tk\Dom\AttributesTrait;
     use \Tk\Dom\CssTrait;
 
@@ -86,6 +87,11 @@ abstract class Iface
      */
     protected $onCellHtml = null;
 
+    /**
+     * @var string
+     */
+    protected $headTitle = '';
+
     
     
 
@@ -122,16 +128,41 @@ abstract class Iface
     }
 
     /**
+     * @return string
+     */
+    public function getHeadTitle()
+    {
+        return $this->headTitle;
+    }
+
+    /**
+     *
+     * @param string $headTitle
+     * @return $this
+     */
+    public function setHeadTitle(string $headTitle)
+    {
+        $this->headTitle = $headTitle;
+        return $this;
+    }
+
+    /**
      * Return the cell header HTML string
      * @return string
      */
     public function getCellHeader()
     {
-        $str = str_replace(array('id', 'Id'), '', $this->getLabel());
+        // TODO: check this change, as replacing 'id' interferes with legit labels (EG: 'Paid' becomes 'Pa')
+        //$str = str_replace(array('id', 'Id'), '', $this->getLabel());
+        $str = str_replace(array('_id', 'Id'), '', $this->getLabel());
         $url = $this->getOrderUrl();
         if ($url && $this->getTable()->getStaticOrderBy() === null) {
-            $str = sprintf('<a href="%s" class="noblock" title="Click to order by: %s">%s</a>',
-                htmlentities($url->toString()), $this->getLabel(), $this->getLabel());
+            $t = 'Click to order by: ' . $this->getLabel();
+            if ($this->getHeadTitle()) {
+                $t = $this->getHeadTitle();
+            }
+            $str = sprintf('<a href="%s" class="noblock" title="%s">%s</a>',
+                htmlentities($url->toString()), $t, $this->getLabel());
         }
         return $str;
     }
@@ -193,7 +224,7 @@ abstract class Iface
      */
     public function getPropertyValue($obj)
     {
-        $value = $this->getRawValue($obj);
+        $value = $this->getObjectPropertyValue($obj);
         return $value;
     }
 
@@ -206,7 +237,7 @@ abstract class Iface
      */
     public function getRawValue($obj)
     {
-        $value = $this->getObjectPropertyValue($obj);
+        $value = $this->getPropertyValue($obj);
         return $value;
     }
 
@@ -602,7 +633,7 @@ abstract class Iface
 
     /**
      * Set a callback to return a modified property value
-     * Callback: function ($cell, $obj, $value) { return $value; }
+     * Callback: function (\Tk\Table\Cell\Iface $cell, $obj, $value) { return $value; }
      *
      * @param callable $callable
      * @param int $priority [optional]
@@ -635,7 +666,7 @@ abstract class Iface
 
     /**
      * Set the onShowCell callback
-     * Callback: function ($cell, $obj, $html) { return $html; }
+     * Callback: function (\Tk\Table\Cell\Iface $cell, $obj, $html) { return $html; }
      *
      * @param callable $callable
      * @param int $priority

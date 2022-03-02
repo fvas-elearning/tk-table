@@ -16,7 +16,7 @@ class Button extends Iface
     protected $icon = '';
 
     /**
-     * @var string|\Tk\Uri
+     * @var \Tk\Uri
      */
     protected $url = null;
 
@@ -29,9 +29,9 @@ class Button extends Iface
     public function __construct($name, $icon, $url = null)
     {
         parent::__construct($name);
-        $this->icon = $icon;
+        $this->setIcon($icon);
         if ($url)
-            $this->url = \Tk\Uri::create($url);
+            $this->setUrl($url);
         $this->setAttr('type', 'submit');
         $this->addCss('btn btn-default btn-sm btn-xs');
     }
@@ -53,8 +53,8 @@ class Button extends Iface
     public function execute()
     {
         parent::execute();
-        if ($this->url instanceof \Tk\Uri)
-            $this->url->redirect();
+        if ($this->getUrl())
+            $this->getUrl()->redirect();
     }
 
     /**
@@ -69,8 +69,8 @@ class Button extends Iface
         $this->setAttr('name', $btnId);
         $this->setAttr('value', $btnId);
 
-        if ($this->icon) {
-            $template->addCss('icon', $this->icon);
+        if ($this->getIcon()) {
+            $template->addCss('icon', $this->getIcon());
             $template->setVisible('icon');
         }
         $template->appendHtml('btnTitle', $this->getLabel());
@@ -102,6 +102,25 @@ class Button extends Iface
     public function setIcon($icon)
     {
         $this->icon = $icon;
+        return $this;
+    }
+
+    /**
+     * @return \Tk\Uri
+     */
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param string|\Tk\Uri $url
+     * @return Button
+     */
+    public function setUrl($url)
+    {
+        $this->url = \Tk\Uri::create($url);
+        return $this;
     }
 
     /**

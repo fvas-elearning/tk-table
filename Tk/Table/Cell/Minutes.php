@@ -12,7 +12,7 @@ class Minutes extends Text
 
     public function getPropertyValue($obj)
     {
-        $value = self::min2Str($this->getRawValue($obj));
+        $value = self::min2Str($this->getObjectPropertyValue($obj));
         return $value;
     }
 

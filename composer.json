@@ -1,17 +1,16 @@
 {
-    "name": "ttek/tk-table",
+    "name": "uom/tk-table",
     "type": "library",
     "description": "A dynamic table lib to manage table rendering",
     "keywords":  [
         "tropotek",
         "Table"
     ],
-    "time": "2019-10-28",
+    "time": "2020-11-12",
     "license": "MIT",
     "authors":  [
          {
             "name": "Michael Mifsud",
-            "email": "info@tropotek.com.au",
             "homepage": "http://www.tropotek.com/"
         }
     ],
@@ -21,6 +20,11 @@
         }
     },
     "require":  {
-        "ttek/tk-framework": "~3.0.0"
+        "uom/tk-framework": "~3.0.0"
+    },
+    "extra":  {
+        "branch-alias":  {
+            "dev-master": "3.0.x-dev"
+        }
     }
 }

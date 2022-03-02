@@ -215,7 +215,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * Eg: function ($dialog) { }
+     * Eg: function (\Tk\Table\Action\Iface $action) { }
      *
      * @param callable|null $onInit
      * @return $this
@@ -228,7 +228,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * Eg: function ($dialog) { }
+     * Eg: function (\Tk\Table\Action\Iface $action) { }
      *
      * @param callable $callable
      * @param int $priority
@@ -250,7 +250,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * Eg: function ($dialog) { }
+     * Eg: function (\Tk\Table\Action\Iface $action) { }
      *
      * @param callable|null $onShow
      * @return $this
@@ -263,7 +263,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * Eg: function ($dialog) { }
+     * Eg: function (\Tk\Table\Action\Iface $action) { }
      *
      * @param callable $callable
      * @param int $priority
@@ -284,7 +284,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * Eg: function ($dialog) { }
+     * Eg: function (\Tk\Table\Action\Iface $action) { }
      *
      * @param callable|null $onExecute
      * @return $this
@@ -297,7 +297,7 @@ abstract class Iface extends \Dom\Renderer\Renderer implements \Dom\Renderer\Dis
     }
 
     /**
-     * Eg: function ($dialog) { }
+     * Eg: function (\Tk\Table\Action\Iface $action) { }
      *
      * @param callable $callable
      * @param int $priority

@@ -17,6 +17,8 @@ class Text extends Iface
      */
     protected $charLimit = 0;
 
+    protected $urlEnabled = true;
+
     /**
      * Create
      *
@@ -26,6 +28,24 @@ class Text extends Iface
     public function __construct($property, $label = null)
     {
         parent::__construct($property, $label);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUrlEnabled(): bool
+    {
+        return $this->urlEnabled;
+    }
+
+    /**
+     * @param bool $urlEnabled
+     * @return Text
+     */
+    public function setUrlEnabled(bool $urlEnabled): Text
+    {
+        $this->urlEnabled = $urlEnabled;
+        return $this;
     }
 
     /**
@@ -57,10 +77,10 @@ class Text extends Iface
     public function getCellHtml($obj, $rowIdx = null)
     {
         $value = $propValue = $this->getPropertyValue($obj);
-
         if ($this->charLimit && strlen($propValue) > $this->charLimit) {
             $propValue = \Tk\Str::wordcat($propValue, $this->charLimit - 3, '...');
         }
+        //if (!$this->hasAttr('title') && (!is_array($value) && !is_object($value))) {
         if (!$this->hasAttr('title')) {
             //$this->setAttr('title', htmlentities($propValue));
             $this->setAttr('title', htmlspecialchars($value));
@@ -68,9 +88,11 @@ class Text extends Iface
 
         $str = htmlspecialchars($propValue);
         $url = $this->getCellUrl($obj);
-        if ($url) {
+        if ($url && $this->isUrlEnabled()) {
             $str = sprintf('<a href="%s">%s</a>', htmlentities($url->toString()), htmlspecialchars($propValue));
         }
+
+        $this->setUrlEnabled(true);     // Reset the urlEnabled status
         return $str;
     }
 

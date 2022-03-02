@@ -2,6 +2,9 @@
 namespace Tk\Table\Renderer\Dom;
 
 use \Tk\Table\Cell;
+use Tk\Table\Renderer\Dom\Ui\Limit;
+use Tk\Table\Renderer\Dom\Ui\Pager;
+use Tk\Table\Renderer\Dom\Ui\Results;
 use \Tk\Table\Renderer\Iface;
 use Tk\Form;
 
@@ -40,6 +43,15 @@ class Table extends Iface
      */
     protected $formRenderer = null;
 
+    /**
+     * construct
+     *
+     * @param \Tk\Table|null $table
+     */
+    public function __construct($table = null)
+    {
+        parent::__construct($table);
+    }
 
     /**
      * @param \Tk\Table $table
@@ -121,40 +133,48 @@ class Table extends Iface
             $countAll = $tool->getFoundRows();
         }
 
-        // TODO: this could be unrequired since we added $tool->getFoundRows()
+        // TODO: this could be un-required since we added $tool->getFoundRows()
         if ($this->getTable()->getList() instanceof \Tk\Db\Map\ArrayObject) {
             $countAll = $this->getTable()->getList()->countAll();
             $tool = $this->getTable()->getList()->getTool();
         }
 
-        //if ($this->hasFooter() && $count && $tool && $countAll > $tool->getLimit()) {
         if ($this->hasFooter() && $count && $tool) {
-
-            // Results UI
-            $results = Ui\Results::createFromDbTool($tool, $countAll);
-            $results->setInstanceId($this->getTable()->getId());
-            $results->addCss('col-2 col-sm-2');
-            $this->appendFootRenderer($results);
-
-            // Render Pager
-            $pager = Ui\Pager::createFromDbTool($tool, $countAll);
-            $pager->setEnablePageButtons($this->pageButtons);
-            $pager->setInstanceId($this->getTable()->getId());
-            $pager->addCss('col-8 col-sm-8 text-center');
-            $this->appendFootRenderer($pager);
-
-            // Limit UI
-            $limitList = null;
-            if ($this->getTable()->getParam('limitList')) {
-                $limitList = $this->getTable()->getParam('limitList');
+            /** @var Results $results */
+            $results = $this->getFootRenderer('Results');
+            if ($results) {
+                $results->initFromDbTool($tool, $countAll);
+                //$results->setInstanceId($this->getTable()->getId());
+                $results->addCss('col-2 col-sm-2');
+                $this->appendFootRenderer($results);
             }
-            $limit = new Ui\Limit($tool->getLimit(), $limitList);
-            $limit->setInstanceId($this->getTable()->getId());
-            $limit->addCss('col-2 col-sm-2');
-            $this->appendFootRenderer($limit);
+
+            /** @var Pager $pager */
+            $pager = $this->getFootRenderer('Pager');
+            if ($pager) {
+                $pager->initFromDbTool($tool, $countAll);
+                $pager->setEnablePageButtons($this->pageButtons);
+                //$pager->setInstanceId($this->getTable()->getId());
+                $pager->addCss('col-8 col-sm-8 text-center');
+                $this->appendFootRenderer($pager);
+            }
+
+            /** @var Limit $limit */
+            $limit = $this->getFootRenderer('Limit');
+            if ($limit) {
+                // deprecated if code remove in the future use ->setLimitList() not params
+                $limit->setLimit($tool->getLimit());
+                if ($this->getTable()->getParam('limitList')) {
+                    $limit->setLimitList($this->getTable()->getParam('limitList'));
+                }
+                //$limit->setInstanceId($this->getTable()->getId());
+                $limit->addCss('col-2 col-sm-2');
+                $this->appendFootRenderer($limit);
+            }
+            // TODO: Change this out of this condition if not good for all tables.
+            $this->showFooter();
         }
 
-        $this->showFooter();
 
         $this->showAttributes($template);
 
@@ -251,7 +271,11 @@ class Table extends Iface
         foreach($this->getTable()->getList() as $i => $obj) {
             $this->rowRepeat = $template->getRepeat('tr');
             $this->showRow($obj);
-            $this->rowRepeat->setAttr('tr', 'data-rowid', $this->rowId);
+            $this->rowRepeat->setAttr('tr', 'data-rowid', $this->rowId);    // deprecated
+            //$this->rowRepeat->setAttr('tr', 'data-row-id', $this->rowId);     // TODO: upgrade to use this instead
+            if (!$this->rowRepeat->getAttr('tr', 'data-obj-id') && method_exists($obj, 'getId')) {
+                $this->rowRepeat->setAttr('tr', 'data-obj-id', $obj->getId());
+            }
             $this->rowRepeat->appendRepeat();
             $this->rowId++;
         }
@@ -264,6 +288,7 @@ class Table extends Iface
      */
     protected function showRow($obj)
     {
+        $cell = null;
         $rowCssList = array();
         $rowAttrList = array();
         $row = $this->getTable()->getRow();
@@ -327,7 +352,7 @@ class Table extends Iface
     protected function showFooter()
     {
         $template = $this->getTemplate();
-        if (!$template->keyExists('var', 'foot')) return;
+        if (!$template->keyExists('var', 'foot') || !$this->hasFooter()) return;
 
         // Render any footer widgets filters
         foreach($this->getFooterRenderList() as $renderer) {

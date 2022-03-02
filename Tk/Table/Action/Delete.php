@@ -31,7 +31,7 @@ class Delete extends Button
     /**
      * @var string
      */
-    protected $confirmStr = 'Are you sure you want to delete the %selected% selected records?';
+    protected $confirmStr = 'Are you sure you want to delete the selected records?';
 
 
     /**
@@ -44,7 +44,7 @@ class Delete extends Button
         $this->onDelete = Callback::create();
         parent::__construct($name, $icon);
         $this->addCss('tk-action-delete');
-        $this->checkboxName = $checkboxName;
+        $this->setCheckboxName($checkboxName);
     }
 
     /**
@@ -120,6 +120,24 @@ class Delete extends Button
     }
 
     /**
+     * @return string
+     */
+    public function getCheckboxName(): string
+    {
+        return $this->checkboxName;
+    }
+
+    /**
+     * @param string $checkboxName
+     * @return Delete
+     */
+    public function setCheckboxName(string $checkboxName): Delete
+    {
+        $this->checkboxName = $checkboxName;
+        return $this;
+    }
+
+    /**
      * @return mixed
      */
     public function execute()
@@ -131,15 +149,15 @@ class Delete extends Button
         if (empty($request->get($reqName))) {
             return;
         }
-        $selected = $request->get($this->checkboxName);
+        $selected = $request->get($this->getCheckboxName());
         if (!is_array($selected)) return;
 
         /* @var \Tk\Db\Map\Model $obj */
         foreach($this->getTable()->getList() as $obj) {
             if (!is_object($obj)) continue;
             $keyValue = 0;
-            if (property_exists($obj, $this->checkboxName)) {
-                $keyValue = $obj->{$this->checkboxName};
+            if (property_exists($obj, $this->getCheckboxName())) {
+                $keyValue = $obj->{$this->getCheckboxName()};
             }
             if (in_array($keyValue, $selected) && !in_array($keyValue, $this->getExcludeIdList())) {
                 $propagate = true;
@@ -160,10 +178,14 @@ class Delete extends Button
     public function show()
     {
 
-        $this->setAttr('title', 'Delete Selected Records');
+        if (!$this->hasAttr('title'))
+            $this->setAttr('title', 'Delete Selected Records');
+        if (!$this->hasAttr('data-confirm'))
+            $this->setAttr('data-confirm', $this->getConfirmStr());
+
         $this->setAttr('disabled');
-        $this->setAttr('data-cb-name', $this->checkboxName);
-        $this->setAttr('data-cb-confirm', $this->getConfirmStr());
+        $this->setAttr('data-cb-name', $this->getCheckboxName());
+
 
         $template = parent::show();
 
@@ -196,6 +218,7 @@ class Delete extends Button
     {
         $js = <<<JS
 jQuery(function($) {
+  var init = function () {
     function updateBtn(btn) {
       var cbName = btn.data('cb-name');
       if(btn.closest('.tk-table').find('.table-body input[name^="'+cbName+'"]:checked').length) {
@@ -208,16 +231,15 @@ jQuery(function($) {
     $('.tk-action-delete').each(function () {
       var btn = $(this);
       var cbName = btn.data('cb-name');
-      var confirmStr = btn.data('cb-confirm');
-      
       btn.on('click', function () {
         var selected = $(this).closest('.tk-table').find('.table-body input[name^="'+cbName+'"]:checked');
-        return selected.length > 0 && confirm(confirmStr.replace(/%selected%/, selected.length));
+        return selected.length > 0;
       });
       btn.closest('.tk-table').on('change', '.table-body input[name^="'+cbName+'"]', function () { updateBtn(btn); });
-      
       updateBtn(btn);
     });
+  }
+  $('.tk-table form').on('init', document, init).each(init);
 });
 JS;
         return $js;

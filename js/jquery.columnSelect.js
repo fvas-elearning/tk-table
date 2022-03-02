@@ -68,6 +68,7 @@ if (typeof (String.prototype.hashCode) === 'undefined') {
       disabledHidden: true,
       defaultSelected : [],
       defaultUnselected : [],
+      defaultHidden : [],   // Hide these from the dropdown list
 
       // Should return a jquery list containing checkbox inputs to trigger the columns.
       onInitColumnSelectors: function(topRow) {
@@ -93,13 +94,13 @@ if (typeof (String.prototype.hashCode) === 'undefined') {
 
         topRow.each(function (i) {
           var row = tpl.clone();
-          var label = 'Column ' + i;
           var name  = plugin.settings.sid;
           var rowId = name + '-' + i;
-
+          var label = 'Column ' + i;
           if($(this).attr('data-label')) {
             label = $(this).attr('data-label');
           }
+
           row.find('input').attr('id', rowId);
           row.find('input').attr('name', name);
           row.find('input').attr('value', i);
@@ -107,13 +108,17 @@ if (typeof (String.prototype.hashCode) === 'undefined') {
           row.find('input').prop('checked', true);
           row.find('label').attr('for', rowId);
 
-          if (isArray(plugin.settings.disabled) && $.inArray(i+'', plugin.settings.disabled) !== -1) {
+          if (isArray(plugin.settings.disabled) && $.inArray(i, plugin.settings.disabled) !== -1) {
             row.addClass('disabled');
             row.find('label').css('color', plugin.settings.disabledColor);
             row.find('input').attr('readonly', 'readonly');
             if (plugin.settings.disabledHidden) {
               row.hide();
             }
+          }
+
+          if (isArray(plugin.settings.defaultHidden) && $.inArray(i, plugin.settings.defaultHidden) !== -1) {
+            row.hide();
           }
           ul.append(row);
         });
@@ -165,7 +170,7 @@ if (typeof (String.prototype.hashCode) === 'undefined') {
 
         //var state = Cookies.get(plugin.settings.sid);
         getSessionParam(plugin.settings.sid, function (data) {
-          if (data.value) {
+          if (data != undefined && data.value) {
             try {
               var value = JSON.parse(data.value);
               var sel = [];
@@ -246,6 +251,7 @@ if (typeof (String.prototype.hashCode) === 'undefined') {
       }
       // This is required so the crumbs are not messed up...
       plugin.settings.ajaxUrl = addParam(plugin.settings.ajaxUrl, 'crumb_ignore', 'crumb_ignore');
+      plugin.settings.ajaxUrl = addParam(plugin.settings.ajaxUrl, 'nolog', 'nolog');
 
 
       // Get the first row that we will use to setup the column selector

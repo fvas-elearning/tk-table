@@ -22,10 +22,11 @@ class Csv extends Button
     protected $checkboxName = 'id';
 
 
-    protected $ignoreCellList = array(
+    protected $ignoreCellList = [
         //'Tk\Table\Cell\Checkbox',
-        'Tk\Table\Cell\Actions'
-    );
+        'Tk\Table\Cell\Actions',
+        'Tk\Table\Cell\ButtonCollection'
+    ];
 
     /**
      * @var string
@@ -93,7 +94,7 @@ class Csv extends Button
                     $fullList[] = $obj;
                 }
             }
-        } else if ($list && is_object($list) && $list->countAll() > $list->count()) {
+        } else if (is_object($list) && $list->countAll() > $list->count()) {
             $st = $list->getStatement();
             $sql = $st->queryString;
             if (preg_match('/ LIMIT /i', $sql)) {
@@ -107,6 +108,14 @@ class Csv extends Button
             } else {
                 $fullList = \Tk\Db\Map\ArrayObject::create($stmt);
             }
+        } else if (is_array($list)) {
+            $sql = $this->getDb()->getLastQuery();
+            if (preg_match('/ LIMIT /i', $sql)) {
+                $sql = substr($sql, 0, strrpos($sql, 'LIMIT'));
+            }
+            $stmt = $this->getDb()->prepare($sql);
+            $stmt->execute();
+            $fullList = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
 
         // Output the CSV data
@@ -119,7 +128,8 @@ class Csv extends Button
         // Write cell labels to first line of csv...
         foreach ($this->table->getCellList() as $i => $cell) {
             if ($this->ignoreCell($cell)) continue;
-            $arr[] = $cell->getLabel();
+            //$arr[] = $cell->getLabel();           // TODO: Check this change does not influence any external functionality
+            $arr[] = $cell->getProperty();
         }
         fputcsv($out, $arr);
         if ($fullList) {
@@ -129,8 +139,6 @@ class Csv extends Button
                 foreach ($this->table->getCellList() as $cell) {
                     if ($this->ignoreCell($cell)) continue;
                     $value = $cell->getRawValue($obj);
-
-
                     $arr[$cell->getLabel()] = $value;
                 }
                 fputcsv($out, $arr);
